@@ -1,6 +1,7 @@
 from os import getenv
 from time import sleep
 from tweepy import OAuthHandler, API
+from post_anchor import anchor_connect
 
 
 def twitter_connect():
@@ -28,6 +29,8 @@ def search_tweets(api):
         print(tweet.extended_entities['media'][0]['media_url_https'])
         print(tweet.extended_entities['media'][0]['video_info']['variants'][-1]['url'])
         print('====================================================')
+    anchor_connect()
+
 
 # TODO: TRATAR LINKS DE VÍDEOS
 # {
