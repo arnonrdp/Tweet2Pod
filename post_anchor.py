@@ -1,22 +1,31 @@
-import asyncio
-from pyppeteer import launch
+import json
+from os import getenv
+import requests
 
 
-async def anchor_connect():
-    print("Launching pyppeteer")
-    browser = await launch(args=["--no-sandbox"], headless=headless_mode)
-    page = await browser.newPage()
+def anchor_connect():
+    csrf = requests.get('https://anchor.fm/api/csrf')
 
-    navigationPromise = asyncio.ensure_future(page.waitForNavigation())
+    json_csrf = json.loads(csrf.text)['csrfToken']
 
-    await page.goto("https://anchor.fm/dashboard/episode/new")
+    data = {'email': getenv('EMAIL'),
+            'password': getenv('PASSWORD'),
+            '_csrf': json_csrf}
 
-    await page.setViewport({"width": 1600, "height": 789})
-    await navigationPromise
+    response = requests.post('https://anchor.fm/api/login', data=data, cookies=csrf.cookies)
+    if response.status_code == 200:
+        print("\nLogin successful")
+        prepare_episode(response.cookies)
+    else:
+        print("\nLogin failed. Status " + str(response.status_code))
+        return None
 
-    print("Trying to log in")
-    await page.type("#email", email)
-    await page.type("#password", password)
-    await page.click("button[type=submit]")
-    await navigationPromise
-    print("Logged in")
+
+def prepare_episode(cookies):
+    response = requests.get('https://anchor.fm/api/episodes/new', cookies=cookies)
+    if response.status_code == 200:
+        print("Episode prepared")
+        return response.cookies
+    else:
+        print("Episode preparation failed. Status " + str(response.status_code))
+        return None
