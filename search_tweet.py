@@ -2,6 +2,8 @@ from os import getenv
 from time import sleep
 from tweepy import OAuthHandler, API
 from post_anchor import anchor_connect
+from download import download_video
+from download import download_cover
 
 
 def twitter_connect():
@@ -23,13 +25,17 @@ def twitter_connect():
 def search_tweets(api):
     tweets = api.search_tweets('Minuto Touro from:PabloSpyer', tweet_mode='extended', count=1)
     for tweet in tweets:
+        video_link = tweet.extended_entities['media'][0]['video_info']['variants'][-1]['url']
+        video_capa = tweet.extended_entities['media'][0]['media_url_https']
         print(tweet.author.screen_name)
         print(tweet.created_at)
         print(tweet.full_text)
-        print(tweet.extended_entities['media'][0]['media_url_https'])
-        print(tweet.extended_entities['media'][0]['video_info']['variants'][-1]['url'])
+        print(video_capa)
+        print(video_link)
         print('====================================================')
-    anchor_connect()
+        download_video(video_link)
+        download_cover(video_capa)
+    anchor_connect() 
 
 
 # TODO: TRATAR LINKS DE VÍDEOS
